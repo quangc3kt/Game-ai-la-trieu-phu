@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ai là triệu phú</title>
+    <style>
+        #quiz-container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 50px;
+            margin-bottom: 30px;
+        }
+        #question-container {
+            margin-bottom: 25px;
+        }
+        #question {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+        .btn {
+            display: inline-block;
+            width: 40%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div id="quiz-container">
+    <h1>Ai là triệu phú</h1>
+    <button id="start-btn">Bắt đầu</button>
+    <div id="question-container" class="hide">
+        <div id="question">Câu hỏi</div>
+        <button class="btn">A</button>
+        <button class="btn">B</button>
+        <button class="btn">C</button>
+        <button class="btn">D</button>
+    </div>
+    <button id="next-btn" class="hide">Tiếp theo</button>
+    <h3 id="score">Điểm</h3>
+    <h3 id="previous-score"></h3>
+</div>
+<script>
+    const startButton = document.getElementById('start-btn')
+    const nextButton = document.getElementById('next-btn')
+    const questionContainerElement = document.getElementById('question-container')
+    const questionElement = document.getElementById('question')
+    const answerButtonsElement = Array.from(document.getElementsByClassName('btn'))
+    const scoreElement = document.getElementById('score');
+    const previousScoreElement = document.getElementById('previous-score');
+
+    window.onload = function () {
+        previousScoreElement.textContent = 'Điểm lần chơi trước :' + localStorage.getItem('previousScore') || 0;
+
+    }
+    const questions = [
+        {
+            question: 'Đâu là tên của một bãi biển ở Quảng Bình?',
+            answers: ['A: Đá lăn', 'B: Đá nhảy', 'C: Đá chạy', 'D: Đá bò'],
+            correctIndex: 1
+        },
+        {
+            question: 'Thơ hai-cư là thể thơ truyền thống của nước nào?',
+            answers: ['A: Hàn Quốc', 'B: Mông Cổ', 'C: Nhật Bản', 'D: Triều Tiên'],
+            correctIndex: 2
+        },
+        {
+            question: 'Nhân vật chị Dậu trong tác phẩm Tắt Đèn của Ngô Tất Tố là gì?',
+            answers: ['A: Lê Thị Đào', 'B: Lê Thị Mai', 'C: Lê Thị Xuân', 'D: Lê Thị Lan'],
+            correctIndex: 0
+        },
+        {
+            question: 'Tên ngn tháp Đambri hùng vĩ của núi rừng Tây Nguyên có ý nghĩa là gì ?',
+            answers: ['A: Đợi chờ', 'B: Chung thủy', 'C: Mong nhớ', 'D: Yêu thương'],
+            correctIndex: 0
+        },
+        {
+            question: 'Bảy chú lùn trong truyện bạch tuyết làm nghề gì?',
+            answers: ['A: Thợ rèn', 'B: Thợ mỏ', 'C: Thợ săn', 'D: Thợ may'],
+            correctIndex: 1
+        },
+        {
+            question: 'Thương hiệu lò rèn Vĩnh Kim nổi tiếng nhất với các loại quả nào sau đây?',
+            answers: ['A: Sầu riêng', 'B: Xoài', 'C: Chôm chôm', 'D: Vú sữa'],
+            correctIndex: 3
+        },
+        {
+            question: 'Loại cây nào trong tam đa Phúc - Lộc - Thọ là biểu trưng cho từ Phúc?',
+            answers: ['A: Cây lộc vừng', 'B: Cây vạn tuế', 'C: Cây sung', 'D: Cây trạng nguyên'],
+            correctIndex: 2
+        },
+        {
+            question: 'Công viên mang tên Đại tướng Võ Nguyên Giáp  tọa lạc trên hòn đảo nào ở quần đào Trường Sa?',
+            answers: ['A: Trường Sa Lớn', 'B: Nam Yết', 'C: Sơn Ca', 'D: Sinh tồn'],
+            correctIndex: 2
+        },
+        {
+            question: 'Vở kịch nào là tác phẩm đầu tay của nhà viết kich Lưu Quang Vũ?',
+            answers: ['A: Sống mãi tuổi 17', 'B: Hồn Trương Ba - da hàng thịt', 'C: Nàng Sita', 'D: Tin ở hoa hồng'],
+            correctIndex: 0
+        },
+        {
+            question: '"Trên biểu tượng du lịch "Việt Nam-Vẻ đẹp bất tận" màu sắc nào của cánh sen tượng trưng cho dụ lịch văn hóa, lịch sử?',
+            answers: ['A: Màu xanh lá cây', 'B: Màu vàng cam', 'C: Màu hồng', 'D: Màu tím '],
+            correctIndex: 1
+        },
+        {
+            question: 'Đồ vật nào đã được tạp chí TIME bình chọn là "nhân vật của năm" vào năm 1982” ?',
+            answers: ['A: Ti vi', 'B: Máy tính cá nhân', 'C: La bàn', 'D: Điện thoại'],
+            correctIndex: 1
+        },
+
+    ]
+
+    let currentQuestionIndex = 0
+    let score = 0
+    let gameOver = false
+
+    startButton.addEventListener('click', startGame)
+    nextButton.addEventListener('click', () => {
+        currentQuestionIndex++
+        // isCorrect = false
+        nextButton.classList.add('hide')
+        if (currentQuestionIndex < questions.length) {
+            setNextQuestion()
+        } else {
+            alert('Trò chơi kết thúc.')
+            startButton.innerText = 'Chơi lại'
+            startButton.classList.remove('hide')
+        }
+    })
+
+    function startGame() {
+        if (gameOver) {
+            localStorage.setItem('previousScore', score);
+            previousScoreElement.textContent = 'Điểm lần chơi trước: ' + localStorage.getItem('previousScore');
+
+            return
+        }
+        startButton.classList.add('hide')
+        currentQuestionIndex = 0
+        score = 0
+        scoreElement.textContent = `Điểm: ${score}`
+        questionContainerElement.classList.remove('hide')
+        setNextQuestion()
+    }
+
+    function setNextQuestion() {
+        resetState()
+        showQuestion(questions[currentQuestionIndex])
+    }
+
+    function showQuestion(question) {
+        questionElement.innerText = question.question
+        answerButtonsElement.forEach((button, index) => {
+            button.innerText = question.answers[index]
+            button.disabled = false
+            button.addEventListener('click', selectAnswer)
+        })
+    }
+
+    function resetState() {
+        nextButton.classList.add('hide')
+        answerButtonsElement.forEach(button => {
+            button.disabled = true
+            button.classList.remove('correct', 'wrong')
+        })
+    }
+
+    function selectAnswer(e) {
+        const selectedButton = e.target
+        const selectedIndex = answerButtonsElement.findIndex(btn => btn === selectedButton)
+        if (selectedIndex === questions[currentQuestionIndex].correctIndex) {
+            selectedButton.classList.add('correct')
+            score++
+            scoreElement.textContent = `Điểm: ${score}`
+            alert('Bạn đã trả lời đúng')
+            gameOver = false
+        } else {
+            selectedButton.classList.add('wrong')
+            alert('Bạn đã trả lời sai. Trò chơi kết thúc.')
+            nextButton.classList.add('hide')
+            startButton.innerText = 'Chơi lại'
+            startButton.classList.remove('hide')
+            questionContainerElement.classList.add('hide')
+            gameOver = true
+
+            localStorage.setItem('previousScore', score)
+            previousScoreElement.textContent = 'Điểm lần chơi trước: ' + localStorage.getItem('previousScore');
+            return
+        }
+
+        if(currentQuestionIndex === questions.length - 1) {
+            gameOver = true
+        }
+
+        if(!gameOver) {
+            nextButton.classList.remove('hide')
+        }
+        nextButton.classList.remove('hide')
+
+    }
+</script>
+</body>
+</html>
